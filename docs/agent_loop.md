@@ -60,3 +60,15 @@ The loop continues — the agent will observe whether this new action works and 
 ## How This Is Different from a Normal Chatbot
 
 A normal chatbot answers a question and stops — it has no memory of what happened next and no way to find out. An autonomous agent, by contrast, stays in the loop: it watches real-world outcomes, compares them to what it expected, and changes its behaviour based on what it learns. Over many cycles, the agent gets progressively better at helping each individual learner — something a one-shot chatbot response can never do.
+
+---
+
+## Applying This to Marketing Content
+
+This repo implements the same five-step loop for school-marketing content, using plain scripts instead of a live agent:
+
+1. **Observe** → `scripts/check_calendar_gaps.py` scans the content calendar for gaps, missing fields, and past-due posts.
+2. **Decide / Act** → `scripts/generate_content_brief.py` turns a calendar row into a finished content brief, ready for a human to film/write/design.
+3. **Get Feedback / Improve** → `scripts/log_post_performance.py` records how a published post actually performed (manually-assigned engagement score) and recommends which content type to lean into next.
+
+Nothing here fabricates data at any step — see `.claude/skills/privacy-and-compliance/SKILL.md` for the rules that keep this loop honest.
