@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Silverleaf Content Calendar</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <h1>Silverleaf Marketing Content</h1>
+  <p class="subtitle">Content calendar, gap checks, and performance log — no data here is ever invented.</p>
+</header>
+
+<main>
+  <section id="calendar-section">
+    <h2>Content Calendar</h2>
+    <table id="calendar-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Date</th><th>Type</th><th>Platform</th><th>Title</th><th>Owner</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="brief-section">
+    <h2>Generated Brief</h2>
+    <div id="brief-empty" class="empty-state">Click "Generate brief" on a calendar row to see it here.</div>
+    <div id="brief-output" hidden>
+      <p id="brief-needs-input" class="warning" hidden></p>
+      <pre id="brief-text"></pre>
+    </div>
+  </section>
+
+  <section id="gaps-section">
+    <h2>Calendar Gap Report</h2>
+    <div class="controls">
+      <label for="days-ahead">Flag gaps of</label>
+      <input type="number" id="days-ahead" value="14" min="1" />
+      <label for="days-ahead">+ days</label>
+      <button id="check-gaps-btn">Check gaps</button>
+    </div>
+    <div id="gaps-output"></div>
+  </section>
+
+  <section id="performance-section">
+    <h2>Performance Log</h2>
+    <form id="performance-form">
+      <input type="date" name="date" required />
+      <input type="text" name="content_type" placeholder="content_type (e.g. social_post)" required />
+      <input type="text" name="platform" placeholder="platform (e.g. instagram)" required />
+      <input type="number" name="engagement_score" placeholder="score 1-10" min="1" max="10" step="0.5" required />
+      <input type="text" name="notes" placeholder="notes (optional)" />
+      <button type="submit">Log performance</button>
+    </form>
+    <p id="performance-error" class="error" hidden></p>
+    <p id="recommendation"></p>
+    <table id="performance-table">
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Platform</th><th>Score</th><th>Notes</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
