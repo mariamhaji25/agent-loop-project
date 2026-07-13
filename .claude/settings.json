@@ -7,6 +7,7 @@
           {
             "type": "command",
             "command": "fp=$(sed -n 's/.*\"file_path\"[[:space:]]*:[[:space:]]*\"\\([^\"]*\\)\".*/\\1/p'); if printf '%s' \"$fp\" | grep -qiE '[\\\\/]notes[\\\\/]'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"A notes file was just saved: %s. Run the daily-wrap-up skill now (.claude/skills/daily-wrap-up/SKILL.md): read the current dated notes file in notes/ and write its done/doing/next summary to log/.\"}}' \"$fp\"; fi",
+            "shell": "bash",
             "statusMessage": "Checking if a notes file was saved..."
           }
         ]
