@@ -102,10 +102,31 @@ and two separate deploy pipelines for what is a small, single-user
 internal tool. **Applies to:** revisit only if the frontend needs to scale
 independently (CDN caching, a separate team owning it) — not the case here.
 
-## No authentication on the write endpoints for this deployment
-`POST /api/briefs/<id>` and `POST /api/performance` are open once the app
-is live. **Why accepted:** all data in this repo is synthetic (see the
-privacy rule above), so a stranger writing a junk row is low-stakes for
-this assessment deployment. **Known gap:** if this tool ever holds real
-school data, it needs auth (even a single shared password) before the
-write endpoints go on a public URL — do not skip that step at that point.
+## No authentication on the write endpoints for this deployment (superseded)
+Originally shipped without auth, accepted because all data here is
+synthetic. **Superseded 2026-07-15:** a login gate now sits in front of
+the whole app (see below) — that gap is closed.
+
+## Login gate in front of the whole app, credentials never touch the repo or chat
+A session-based login (`APP_USERNAME`/`APP_PASSWORD`, read from the
+environment) now guards `/` and every `/api/*` route; only `/login` and
+`POST /api/login` are public. **Why:** the write endpoints
+(`POST /api/briefs/<id>`, `POST /api/performance`) shouldn't be open to
+anyone with the URL, even for synthetic data — and the calendar/brief
+content itself isn't meant to be public either. **How it's kept safe:**
+the real username/password/session-signing key live only in the local
+`.env` (gitignored, confirmed never committed — working tree and full git
+history both swept clean) and in Render's Environment tab; neither Claude
+nor this repo ever holds the real values. **Applies to:** any new route
+added later must default to behind the login gate (`@login_required`)
+unless there's a specific reason it needs to be public, same as `/login`
+and `/api/login` are today.
+
+## Still no API_KEY anywhere in this project
+This app makes no calls to any AI/LLM API at runtime — it's the same
+deterministic CSV/script automation as always, just with a web front end
+and a login gate on top. **Applies to:** if a future feature adds a real
+AI call (e.g. an LLM helping surface `NEEDS INPUT` gaps), that would cut
+directly against the "never invent a missing field" rule above — treat
+that tension as a reason to slow down and get explicit sign-off before
+building it, not as an implementation detail to sort out later.
