@@ -5,38 +5,90 @@ Every route calls straight into scripts/ (the same functions the CLI uses)
 so the web app and the CLI share one implementation of the rules in
 CLAUDE.md: never fabricate a missing field, never invent an engagement
 score, never delete calendar or performance-log history.
+
+The whole app sits behind a login gate (APP_USERNAME / APP_PASSWORD, read
+from the environment -- never hard-coded). This project makes no calls to
+any AI/LLM API, so there is no API_KEY to protect here.
 """
 
 import csv
 import datetime
+import functools
 import os
 import pathlib
+import secrets
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from flask import Flask, jsonify, request, send_from_directory  # noqa: E402
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(ROOT / ".env")
+
+from flask import Flask, jsonify, redirect, request, send_from_directory, session, url_for  # noqa: E402
 
 from scripts import check_calendar_gaps, generate_content_brief, log_post_performance  # noqa: E402
 
 CALENDAR_PATH = ROOT / "content_calendar" / "calendar.csv"
 PERFORMANCE_LOG_PATH = ROOT / "content_calendar" / "performance_log.csv"
 
-app = Flask(__name__, static_folder=str(ROOT / "frontend"), static_url_path="")
+APP_USERNAME = os.environ.get("APP_USERNAME")
+APP_PASSWORD = os.environ.get("APP_PASSWORD")
+
+app = Flask(__name__, static_folder=str(ROOT / "frontend"), static_url_path="/static")
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("logged_in"):
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "not logged in"}), 401
+            return redirect(url_for("login_page"))
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+@app.get("/login")
+def login_page():
+    return send_from_directory(app.static_folder, "login.html")
+
+
+@app.post("/api/login")
+def api_login():
+    if not APP_USERNAME or not APP_PASSWORD:
+        return jsonify({"error": "server missing APP_USERNAME/APP_PASSWORD configuration"}), 500
+
+    data = request.get_json(silent=True) or {}
+    if data.get("username") == APP_USERNAME and data.get("password") == APP_PASSWORD:
+        session["logged_in"] = True
+        return jsonify({"ok": True})
+    return jsonify({"error": "invalid username or password"}), 401
+
+
+@app.post("/api/logout")
+def api_logout():
+    session.clear()
+    return jsonify({"ok": True})
 
 
 @app.get("/")
+@login_required
 def index():
     return send_from_directory(app.static_folder, "index.html")
 
 
 @app.get("/api/calendar")
+@login_required
 def get_calendar():
     return jsonify(check_calendar_gaps.load_rows(CALENDAR_PATH))
 
 
 @app.get("/api/gaps")
+@login_required
 def get_gaps():
     days_ahead = int(request.args.get("days_ahead", 14))
     rows = check_calendar_gaps.load_rows(CALENDAR_PATH)
@@ -52,6 +104,7 @@ def get_gaps():
 
 
 @app.post("/api/briefs/<row_id>")
+@login_required
 def create_brief(row_id):
     row = generate_content_brief.load_row(CALENDAR_PATH, row_id=row_id)
     if row is None:
@@ -77,6 +130,7 @@ def create_brief(row_id):
 
 
 @app.get("/api/performance")
+@login_required
 def get_performance():
     entries = []
     if PERFORMANCE_LOG_PATH.exists():
@@ -86,6 +140,7 @@ def get_performance():
 
 
 @app.post("/api/performance")
+@login_required
 def add_performance():
     data = request.get_json(silent=True) or {}
     required = ["date", "content_type", "platform", "engagement_score"]

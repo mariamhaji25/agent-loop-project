@@ -3,3 +3,7 @@ __pycache__/
 generated/*
 !generated/.gitkeep
 !generated/README.md
+.env
+.env.*
+!.env.example
+backend/.server.*.log

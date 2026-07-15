@@ -1,3 +1,17 @@
+async function apiFetch(url, options) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    window.location.href = "/login";
+    throw new Error("not logged in");
+  }
+  return res;
+}
+
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  await fetch("/api/logout", { method: "POST" });
+  window.location.href = "/login";
+});
+
 const calendarBody = document.querySelector("#calendar-table tbody");
 const briefEmpty = document.getElementById("brief-empty");
 const briefOutput = document.getElementById("brief-output");
@@ -9,7 +23,7 @@ const recommendationEl = document.getElementById("recommendation");
 const performanceError = document.getElementById("performance-error");
 
 async function loadCalendar() {
-  const res = await fetch("/api/calendar");
+  const res = await apiFetch("/api/calendar");
   const rows = await res.json();
   calendarBody.innerHTML = "";
   for (const row of rows) {
@@ -32,13 +46,14 @@ async function loadCalendar() {
 }
 
 async function generateBrief(rowId) {
-  const res = await fetch(`/api/briefs/${rowId}`, { method: "POST" });
+  const res = await apiFetch(`/api/briefs/${rowId}`, { method: "POST" });
   const data = await res.json();
   briefEmpty.hidden = true;
   briefOutput.hidden = false;
   if (!res.ok) {
     briefText.textContent = `Error: ${data.error}`;
     briefNeedsInput.hidden = true;
+    document.getElementById("brief-section").scrollIntoView({ behavior: "smooth", block: "start" });
     return;
   }
   briefText.textContent = data.brief;
@@ -48,11 +63,12 @@ async function generateBrief(rowId) {
   } else {
     briefNeedsInput.hidden = true;
   }
+  document.getElementById("brief-section").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function checkGaps() {
   const daysAhead = document.getElementById("days-ahead").value || 14;
-  const res = await fetch(`/api/gaps?days_ahead=${daysAhead}`);
+  const res = await apiFetch(`/api/gaps?days_ahead=${daysAhead}`);
   const data = await res.json();
   const section = (title, items) => `
     <h3>${title}</h3>
@@ -66,7 +82,7 @@ async function checkGaps() {
 }
 
 async function loadPerformance() {
-  const res = await fetch("/api/performance");
+  const res = await apiFetch("/api/performance");
   const data = await res.json();
   performanceBody.innerHTML = "";
   for (const row of data.entries) {
@@ -96,7 +112,7 @@ document.getElementById("performance-form").addEventListener("submit", async (e)
     engagement_score: form.engagement_score.value,
     notes: form.notes.value,
   };
-  const res = await fetch("/api/performance", {
+  const res = await apiFetch("/api/performance", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),

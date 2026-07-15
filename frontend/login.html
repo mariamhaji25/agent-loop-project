@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in — Silverleaf Content Calendar</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="login-page">
+  <div class="login-card">
+    <h1>Silverleaf Marketing Content</h1>
+    <form id="login-form">
+      <input type="text" name="username" placeholder="Username" autocomplete="username" required />
+      <input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
+      <button type="submit">Log in</button>
+    </form>
+    <p id="login-error" class="error" hidden></p>
+  </div>
+</div>
+
+<script>
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const errorEl = document.getElementById("login-error");
+  errorEl.hidden = true;
+  const form = e.target;
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: form.username.value, password: form.password.value }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    errorEl.hidden = false;
+    errorEl.textContent = data.error;
+    return;
+  }
+  window.location.href = "/";
+});
+</script>
+</body>
+</html>

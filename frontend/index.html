@@ -4,12 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Silverleaf Content Calendar</title>
-<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 <header>
-  <h1>Silverleaf Marketing Content</h1>
-  <p class="subtitle">Content calendar, gap checks, and performance log — no data here is ever invented.</p>
+  <div class="header-row">
+    <div>
+      <h1>Silverleaf Marketing Content</h1>
+      <p class="subtitle">Content calendar, gap checks, and performance log — no data here is ever invented.</p>
+    </div>
+    <button id="logout-btn" type="button">Log out</button>
+  </div>
 </header>
 
 <main>
@@ -66,6 +71,6 @@
   </section>
 </main>
 
-<script src="app.js"></script>
+<script src="/static/app.js"></script>
 </body>
 </html>
